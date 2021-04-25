@@ -23,9 +23,9 @@ if __name__ == "__main__":
     arch = f"ResNet{args.D}"
     print("---------- RANDOM FEATURES TRAINING ----------")
     model_random_f.to(device)
-    stats_random_f = train(model_random_f, device, train_loader, val_loader, arch, epochs=80)
+    stats_random_f = train(model_random_f, device, train_loader, val_loader, arch)
     print("---------- BN ONLY TRAINING ----------")
     model_bn.to(device)
-    stats_bn = train(model_bn, device, train_loader, val_loader, arch, bn_only=True, epochs=80)
+    stats_bn = train(model_bn, device, train_loader, val_loader, arch, bn_only=True)
     draw_loss(stats_bn, stats_random_f, arch)
     draw_accuracy(stats_bn, stats_random_f, arch)

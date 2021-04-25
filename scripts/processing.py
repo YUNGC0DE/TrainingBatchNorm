@@ -24,8 +24,8 @@ def train(model: ResNet, device: torch.device, train_loader: DataLoader
     """
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
-    lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[60, ])
-    save_steps = (25, 50, 79)
+    lr_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[80, 120])
+    save_steps = (25, 50, 79, 119)
     stats = {
         "train_loss": [],
         "val_loss": [],
