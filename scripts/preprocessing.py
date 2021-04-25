@@ -5,27 +5,7 @@ from torchvision import models, transforms, datasets
 from typing import Tuple
 from prettytable import PrettyTable
 import torch
-from torch import nn
 from torch.utils.data import DataLoader
-
-
-def load_model(res_deep: int) -> models.ResNet:
-    """
-    :param zero: zero init
-    :param res_deep: ResNet deep
-    :return: ResNet model
-    """
-    arch_dict = {
-        18: models.resnet18,
-        34: models.resnet34,
-        50: models.resnet50,
-    }
-    if arch_dict.get(res_deep) is not None:
-        model = arch_dict[res_deep]()
-        model.fc = nn.Linear(model.fc.in_features, 10)
-        return model
-
-    raise AttributeError(f"No such deep {res_deep} in ResNet")
 
 
 def get_loader(batch_size: int = 128, num_workers: int = 4) -> Tuple[DataLoader, DataLoader]:
@@ -83,6 +63,7 @@ def get_frozen_models(model: models.ResNet) -> Tuple[models.ResNet, models.ResNe
         print(f"Left {round(bn_params / total_params * 100, 3)}% params \n")
 
     def model_random_f_():
+        model_random_f.requires_grad_(False)
         for m in model_random_f.modules():
             if isinstance(m, torch.nn.Conv2d):
                 weights = m.state_dict()
@@ -93,13 +74,12 @@ def get_frozen_models(model: models.ResNet) -> Tuple[models.ResNet, models.ResNe
                 random_y_2 = randint(0, filter_size - 1)
                 channel_1 = randint(0, len(weights['weight'][0]) - 1)
                 channel_2 = randint(0, len(weights['weight'][0]) - 1)
-                weights['weight'] = torch.zeros_like(weights['weight'], requires_grad=True)
-                weights['weight'][:, channel_1, random_x_1, random_y_1] = random.uniform(0.001, 1)
-                weights['weight'][:, channel_2, random_x_2, random_y_2] = random.uniform(0.001, 1)
+                weights['weight'] = torch.zeros_like(weights['weight'])
+                weights['weight'][channel_1, :, random_x_1, random_y_1] = random.uniform(0.001, 1)
+                weights['weight'][channel_2, :, random_x_2, random_y_2] = random.uniform(0.001, 1)
                 m.load_state_dict(weights)
-            else:
-                if isinstance(m, torch.nn.Linear) or isinstance(m, torch.nn.BatchNorm2d):
-                    m.requires_grad_(False)
+                m.requires_grad_(True)
+        model.conv1.requires_grad_(False)
 
     model_random_f = copy.deepcopy(model)
     model_bn_()
